@@ -1,0 +1,9 @@
+{
+	"extension-id": "transparent-window-moving",
+	"uuid": "transparent-window-moving@noobsai.github.com", 
+	"name": "Transparent Window Moving", 
+ 	"gettext-domain": "gnome-shell-extensions",
+	"settings-schema": "org.gnome.shell.extensions.transparent-window-moving",
+	"description": "Makes window transparent while moving on the desktop", 
+	"shell-version": ["3.28"]
+}
