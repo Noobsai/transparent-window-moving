@@ -21,3 +21,8 @@ install: uninstall build
 
 uninstall:
 	rm -rf $(EXTENSIONDIR)/$(UUID)
+
+debug_install: uninstall
+	glib-compile-schemas $(SRCDIR)/schemas/
+	ln -s "$(realpath ./)/$(SRCDIR)" $(UUID)
+	mv $(UUID) $(EXTENSIONDIR)
