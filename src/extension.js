@@ -10,14 +10,15 @@ let settings = null;
 let WindowState;
 
 let on_window_garb_begin, on_window_garb_end;
+let on_move_changed, on_resize_changed;
 
-let allowed_grab_operations = [
-  //Meta.GrabOp.NONE,
-  //Meta.GrabOp.WINDOW_BASE,
-  //Meta.GrabOp.COMPOSITOR,
-  //Meta.GrabOp.WAYLAND_POPUP,
-  //Meta.GrabOp.FRAME_BUTTON,
+let allowed_grab_operations = [];
+let grab_moving_operations = [
   Meta.GrabOp.MOVING,
+  Meta.GrabOp.KEYBOARD_MOVING
+];
+
+let grab_resizing_operations = [
   Meta.GrabOp.RESIZING_NW,
   Meta.GrabOp.RESIZING_N,
   Meta.GrabOp.RESIZING_NE,
@@ -26,7 +27,6 @@ let allowed_grab_operations = [
   Meta.GrabOp.RESIZING_S,
   Meta.GrabOp.RESIZING_SE,
   Meta.GrabOp.RESIZING_W,
-  Meta.GrabOp.KEYBOARD_MOVING,
   Meta.GrabOp.KEYBOARD_RESIZING_UNKNOWN,
   Meta.GrabOp.KEYBOARD_RESIZING_NW,
   Meta.GrabOp.KEYBOARD_RESIZING_N,
@@ -37,6 +37,17 @@ let allowed_grab_operations = [
   Meta.GrabOp.KEYBOARD_RESIZING_SE,
   Meta.GrabOp.KEYBOARD_RESIZING_W,
 ];
+
+function init_grab_operations() {
+  allowed_grab_operations = [];
+  if (settings.get_boolean('transparent-on-moving')) {
+    allowed_grab_operations.push(...grab_moving_operations);
+  }
+
+  if (settings.get_boolean('transparent-on-resizing')) {
+    allowed_grab_operations.push(...grab_resizing_operations);
+  }
+}
 
 function is_grab_operation_allowed(grab_op) {
   return allowed_grab_operations.indexOf(grab_op) > -1; 
@@ -121,19 +132,19 @@ function window_garb_end(meta_display, meta_screen, meta_window, meta_grab_op, g
 
 function enable() {
   settings = Convenience.getSettings();
+  init_grab_operations();
   WindowState = {};
   on_window_garb_begin = global.display.connect('grab-op-begin', window_garb_begin);
   on_window_garb_end = global.display.connect('grab-op-end', window_garb_end);
+  on_move_changed = settings.connect('changed::transparent-on-moving', init_grab_operations);
+  on_resize_changed = settings.connect('changed::transparent-on-resizing', init_grab_operations);
 }
 
 function disable() {
-  if (on_window_garb_begin) {
-     global.display.disconnect(on_window_garb_begin);
-  }
-
-  if (on_window_garb_end) {
-     global.display.disconnect(on_window_garb_end);
-  }
+  global.display.disconnect(on_window_garb_begin);
+  global.display.disconnect(on_window_garb_end);
+  settings.disconnect(on_move_changed);
+  settings.disconnect(on_resize_changed);
 
   WindowState = {};
   settings.run_dispose();

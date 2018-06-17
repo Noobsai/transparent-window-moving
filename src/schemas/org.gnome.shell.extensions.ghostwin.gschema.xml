@@ -10,5 +10,15 @@
       <summary>Transition Time</summary>
       <description>Animation time.</description>
     </key>
+    <key name="transparent-on-moving" type="b">
+      <default>true</default>
+      <summary>Transparent on moving</summary>
+      <description>Transparent on moving.</description>
+    </key>
+    <key name="transparent-on-resizing" type="b">
+      <default>true</default>
+      <summary>Transparent on resizing</summary>
+      <description>Transparent on resizing.</description>
+    </key>
   </schema>
 </schemalist>
