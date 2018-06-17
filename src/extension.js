@@ -6,19 +6,19 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
 
-let settings = null;
-let WindowState;
+let _settings = null;
+let _WindowState;
 
-let on_window_garb_begin, on_window_garb_end;
-let on_move_changed, on_resize_changed;
+let _on_window_garb_begin, _on_window_garb_end;
+let _on_move_changed, _on_resize_changed;
 
-let allowed_grab_operations = [];
-let grab_moving_operations = [
+let _allowed_grab_operations = [];
+let _grab_moving_operations = [
   Meta.GrabOp.MOVING,
   Meta.GrabOp.KEYBOARD_MOVING
 ];
 
-let grab_resizing_operations = [
+let _grab_resizing_operations = [
   Meta.GrabOp.RESIZING_NW,
   Meta.GrabOp.RESIZING_N,
   Meta.GrabOp.RESIZING_NE,
@@ -35,32 +35,32 @@ let grab_resizing_operations = [
   Meta.GrabOp.KEYBOARD_RESIZING_SW,
   Meta.GrabOp.KEYBOARD_RESIZING_S,
   Meta.GrabOp.KEYBOARD_RESIZING_SE,
-  Meta.GrabOp.KEYBOARD_RESIZING_W,
+  Meta.GrabOp.KEYBOARD_RESIZING_W
 ];
 
 function init_grab_operations() {
-  allowed_grab_operations = [];
-  if (settings.get_boolean('transparent-on-moving')) {
-    allowed_grab_operations.push(...grab_moving_operations);
+  _allowed_grab_operations = [];
+  if (_settings.get_boolean('transparent-on-moving')) {
+    _allowed_grab_operations.push(..._grab_moving_operations);
   }
 
-  if (settings.get_boolean('transparent-on-resizing')) {
-    allowed_grab_operations.push(...grab_resizing_operations);
+  if (_settings.get_boolean('transparent-on-resizing')) {
+    _allowed_grab_operations.push(..._grab_resizing_operations);
   }
 }
 
 function is_grab_operation_allowed(grab_op) {
-  return allowed_grab_operations.indexOf(grab_op) > -1; 
+  return _allowed_grab_operations.indexOf(grab_op) > -1; 
 }
 
-function set_opacity(window_actor, target_opacity, on_complete, set_timeout) {
-  let transition_time = settings.get_double('transition-time');
+function set_opacity(window_actor, target_opacity, on_complete, check_if_completed) {
+  let transition_time = _settings.get_double('transition-time');
 
-  let state = WindowState[window_actor.meta_window.get_pid()];
+  let state = _WindowState[window_actor.meta_window.get_pid()];
   let thread = Date.now();
   state.thread = thread;
 
-  let on_completed = function () { 
+  let complete_func = function() { 
     state.thread = 0;
     if (on_complete) { 
       on_complete(); 
@@ -69,85 +69,80 @@ function set_opacity(window_actor, target_opacity, on_complete, set_timeout) {
 
   if (transition_time < 0.001) { 
     window_actor.opacity = target_opacity;
-    on_completed();
+    complete_func();
   } else {
     Tweener.addTween(window_actor, {
         time: transition_time,
         transition: 'easeOutQuad',
         opacity: target_opacity,
-        onComplete: on_completed
+        onComplete: complete_func
     });
-    if (set_timeout) {
-      setTimeout(function() { 
+    if (check_if_completed) {
+      set_timeout(function() { 
         if (state && state.thread == thread){
           window_actor.opacity = target_opacity;
-          on_completed();
+          complete_func();
         }
-      }, transition_time * 1000 + 100);
+      }, transition_time * 1000 + 100); // repair opacity if the Tween was canceled
     }
   }
 }
 
-function setTimeout(handler, time){
+function set_timeout(func, time){
   GLib.timeout_add(GLib.PRIORITY_DEFAULT, time, function() {
-    handler();
+    func();
     return false;
   });
 }
 
 function window_garb_begin(meta_display, meta_screen, meta_window, meta_grab_op, gpointer) {
-  if (!meta_window) {
-    return;
-  }
-
-  if (!is_grab_operation_allowed(meta_grab_op)) {
+  if (!meta_window || !is_grab_operation_allowed(meta_grab_op)) {
     return;
   }
 
   let window_actor = meta_window.get_compositor_private();
+  let pid = meta_window.get_pid();
 
-  let state = WindowState[meta_window.get_pid()];
+  let state = _WindowState[pid];
   if (!state) {
     state = { thread: -1, original_opacity: window_actor.opacity }
-    WindowState[meta_window.get_pid()] = state;
+    _WindowState[pid] = state;
   }
 
-  let opacity_value = settings.get_int('window-opacity');
+  let opacity_value = _settings.get_int('window-opacity');
   set_opacity(window_actor, opacity_value);
 }
 
 function window_garb_end(meta_display, meta_screen, meta_window, meta_grab_op, gpointer) {
-  if (!meta_window) {
+  if (!meta_window || !is_grab_operation_allowed(meta_grab_op)) {
     return;
   }
 
-  if (!is_grab_operation_allowed(meta_grab_op)) {
-    return;
-  }
-
-  let state = WindowState[meta_window.get_pid()];
   let window_actor = meta_window.get_compositor_private();
-  set_opacity(window_actor, state.original_opacity, function () { delete WindowState[meta_window.get_pid()]; }, true);
+  let pid = meta_window.get_pid();
+
+  let state = _WindowState[pid];
+  set_opacity(window_actor, state.original_opacity, function() { delete _WindowState[pid]; }, true);
 }
 
 function enable() {
-  settings = Convenience.getSettings();
+  _settings = Convenience.getSettings();
   init_grab_operations();
-  WindowState = {};
-  on_window_garb_begin = global.display.connect('grab-op-begin', window_garb_begin);
-  on_window_garb_end = global.display.connect('grab-op-end', window_garb_end);
-  on_move_changed = settings.connect('changed::transparent-on-moving', init_grab_operations);
-  on_resize_changed = settings.connect('changed::transparent-on-resizing', init_grab_operations);
+  _WindowState = {};
+  _on_window_garb_begin = global.display.connect('grab-op-begin', window_garb_begin);
+  _on_window_garb_end = global.display.connect('grab-op-end', window_garb_end);
+  _on_move_changed = _settings.connect('changed::transparent-on-moving', init_grab_operations);
+  _on_resize_changed = _settings.connect('changed::transparent-on-resizing', init_grab_operations);
 }
 
 function disable() {
-  global.display.disconnect(on_window_garb_begin);
-  global.display.disconnect(on_window_garb_end);
-  settings.disconnect(on_move_changed);
-  settings.disconnect(on_resize_changed);
+  global.display.disconnect(_on_window_garb_begin);
+  global.display.disconnect(_on_window_garb_end);
+  _settings.disconnect(_on_move_changed);
+  _settings.disconnect(_on_resize_changed);
 
-  WindowState = {};
-  settings.run_dispose();
+  _WindowState = {};
+  _settings.run_dispose();
 }
 
 function init() {
