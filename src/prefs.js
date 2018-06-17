@@ -16,8 +16,8 @@ function init() {
     Convenience.initTranslations();
 }
 
-const GhostWinSettings = GObject.registerClass(
-class GhostWinSettings extends Gtk.Grid {
+const TransparentWindowMovingSettings = GObject.registerClass(
+class TransparentWindowMovingSettings extends Gtk.Grid {
     _init(params) {
         super._init(params);
 
@@ -68,7 +68,7 @@ class GhostWinSettings extends Gtk.Grid {
 });
 
 function buildPrefsWidget() {
-    let widget = new GhostWinSettings();
+    let widget = new TransparentWindowMovingSettings();
     widget.show_all();
 
     return widget;
