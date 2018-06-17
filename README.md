@@ -3,6 +3,8 @@ GNOME Shell Extension.
 
 Makes the window semi-transparent when moving or resizing.
 
+![Screenshot](https://raw.githubusercontent.com/Noobsai/transparent-window-moving/master/screenshot.png)
+
 Should be compatible with other extensions that change the transparency of the window.
 Inspired by GhostWin application.
 
