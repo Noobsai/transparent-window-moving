@@ -7,5 +7,5 @@
 	"description": "Makes the window semi-transparent when moving or resizing", 
 	"url": "https://github.com/Noobsai/transparent-window-moving", 
 	"version": 1,
-	"shell-version": ["3.26, 3.28"]
+	"shell-version": ["3.26", "3.28"]
 }
