@@ -9,6 +9,9 @@ Should be compatible with other extensions that change the transparency of windo
 
 Inspired by GhostWin application.
 
+## Installation from repository
+[Gnome Shell Extensions page](https://extensions.gnome.org/extension/1446/transparent-window-moving/)
+
 ## Installation from git
 ```bash
 git clone https://github.com/Noobsai/transparent-window-moving.git
