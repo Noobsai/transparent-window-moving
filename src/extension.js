@@ -9,7 +9,7 @@ const Convenience = Me.imports.convenience;
 let _settings = null;
 let _WindowState;
 
-let _on_window_garb_begin, _on_window_garb_end;
+let _on_window_grab_begin, _on_window_grab_end;
 let _on_move_changed, _on_resize_changed;
 
 let _allowed_grab_operations = [];
@@ -95,7 +95,7 @@ function set_timeout(func, time){
   });
 }
 
-function window_garb_begin(meta_display, meta_screen, meta_window, meta_grab_op, gpointer) {
+function window_grab_begin(meta_display, meta_screen, meta_window, meta_grab_op, gpointer) {
   if (!meta_window || !is_grab_operation_allowed(meta_grab_op)) {
     return;
   }
@@ -113,7 +113,7 @@ function window_garb_begin(meta_display, meta_screen, meta_window, meta_grab_op,
   set_opacity(window_actor, opacity_value);
 }
 
-function window_garb_end(meta_display, meta_screen, meta_window, meta_grab_op, gpointer) {
+function window_grab_end(meta_display, meta_screen, meta_window, meta_grab_op, gpointer) {
   if (!meta_window || !is_grab_operation_allowed(meta_grab_op)) {
     return;
   }
@@ -129,15 +129,15 @@ function enable() {
   _settings = Convenience.getSettings();
   init_grab_operations();
   _WindowState = {};
-  _on_window_garb_begin = global.display.connect('grab-op-begin', window_garb_begin);
-  _on_window_garb_end = global.display.connect('grab-op-end', window_garb_end);
+  _on_window_grab_begin = global.display.connect('grab-op-begin', window_grab_begin);
+  _on_window_grab_end = global.display.connect('grab-op-end', window_grab_end);
   _on_move_changed = _settings.connect('changed::transparent-on-moving', init_grab_operations);
   _on_resize_changed = _settings.connect('changed::transparent-on-resizing', init_grab_operations);
 }
 
 function disable() {
-  global.display.disconnect(_on_window_garb_begin);
-  global.display.disconnect(_on_window_garb_end);
+  global.display.disconnect(_on_window_grab_begin);
+  global.display.disconnect(_on_window_grab_end);
   _settings.disconnect(_on_move_changed);
   _settings.disconnect(_on_resize_changed);
 
