@@ -56,6 +56,7 @@ function is_grab_operation_allowed(grab_op) {
 function set_opacity(window_actor, target_opacity, on_complete, check_if_completed) {
   let transition_time = _settings.get_double('transition-time');
 
+  let window_surface = window_actor.get_children();
   let state = _WindowState[window_actor.meta_window.get_pid()];
   let thread = Date.now();
   state.thread = thread;
@@ -68,10 +69,10 @@ function set_opacity(window_actor, target_opacity, on_complete, check_if_complet
   };
 
   if (transition_time < 0.001) { 
-    window_actor.opacity = target_opacity;
+    window_surface.opacity = target_opacity;
     complete_func();
   } else {
-    Tweener.addTween(window_actor, {
+    Tweener.addTween(window_surface, {
         time: transition_time,
         transition: 'easeOutQuad',
         opacity: target_opacity,
@@ -80,7 +81,7 @@ function set_opacity(window_actor, target_opacity, on_complete, check_if_complet
     if (check_if_completed) {
       set_timeout(function() { 
         if (state && state.thread == thread){
-          window_actor.opacity = target_opacity;
+          window_surface.opacity = target_opacity;
           complete_func();
         }
       }, transition_time * 1000 + 100); // repair opacity if the Tween was canceled
