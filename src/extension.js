@@ -56,7 +56,7 @@ function is_grab_operation_allowed(grab_op) {
 function set_opacity(window_actor, target_opacity, on_complete, check_if_completed) {
   let transition_time = _settings.get_double('transition-time');
 
-  let window_surface = window_actor.get_children();
+  let window_surface = get_window_surface(window_actor);
   let state = _WindowState[window_actor.meta_window.get_pid()];
   let thread = Date.now();
   state.thread = thread;
@@ -94,6 +94,17 @@ function set_timeout(func, time){
     func();
     return false;
   });
+}
+
+function get_window_surface(window_actor) {
+  var childs = window_actor.get_children();
+  for (var i = 0; i < childs.length; i++) {
+    if (childs[i].constructor.name.indexOf('MetaSurfaceActor') > -1) {
+      return childs[i];
+    }
+  }
+
+  return window_actor;
 }
 
 function window_grab_begin(meta_display, meta_screen, meta_window, meta_grab_op, gpointer) {
