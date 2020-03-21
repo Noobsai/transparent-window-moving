@@ -117,7 +117,8 @@ function window_grab_begin(meta_display, meta_screen, meta_window, meta_grab_op,
 
   let state = _WindowState[pid];
   if (!state) {
-    state = { thread: -1, original_opacity: window_actor.opacity }
+    let window_surface = get_window_surface(window_actor);
+    state = { thread: -1, original_opacity: window_surface.opacity }
     _WindowState[pid] = state;
   }
 
