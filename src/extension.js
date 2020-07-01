@@ -53,11 +53,7 @@ function is_grab_operation_allowed(grab_op) {
   return _allowed_grab_operations.indexOf(grab_op) > -1; 
 }
 
-function set_opacity(window_actor, target_opacity, on_complete, check_if_completed) {
-  let transition_time = _settings.get_double('transition-time');
-
-  let window_surface = get_window_surface(window_actor);
-  let state = _WindowState[window_actor.meta_window.get_pid()];
+function set_opacity(window_surface, target_opacity, state, on_complete, check_if_completed) {
   let thread = Date.now();
   state.thread = thread;
 
@@ -68,6 +64,7 @@ function set_opacity(window_actor, target_opacity, on_complete, check_if_complet
     }
   };
 
+  let transition_time = _settings.get_double('transition-time');
   if (transition_time < 0.001) { 
     window_surface.opacity = target_opacity;
     complete_func();
@@ -77,14 +74,16 @@ function set_opacity(window_actor, target_opacity, on_complete, check_if_complet
         transition: 'easeOutQuad',
         opacity: target_opacity,
         onComplete: complete_func
-    });
+    });   
     if (check_if_completed) {
+      // Repair opacity if the Tween was canceled
+      // Seems was fixed in 3.36
       set_timeout(function() { 
         if (state && state.thread == thread){
           window_surface.opacity = target_opacity;
           complete_func();
         }
-      }, transition_time * 1000 + 100); // repair opacity if the Tween was canceled
+      }, transition_time * 1000 + 100);
     }
   }
 }
@@ -96,7 +95,8 @@ function set_timeout(func, time){
   });
 }
 
-function get_window_surface(window_actor) {
+function get_window_surface(meta_window) {
+  let window_actor = meta_window.get_compositor_private();
   var childs = window_actor.get_children();
   for (var i = 0; i < childs.length; i++) {
     if (childs[i].constructor.name.indexOf('MetaSurfaceActor') > -1) {
@@ -112,18 +112,16 @@ function window_grab_begin(meta_display, meta_screen, meta_window, meta_grab_op,
     return;
   }
 
-  let window_actor = meta_window.get_compositor_private();
+  let window_surface = get_window_surface(meta_window);
   let pid = meta_window.get_pid();
-
   let state = _WindowState[pid];
   if (!state) {
-    let window_surface = get_window_surface(window_actor);
     state = { thread: -1, original_opacity: window_surface.opacity }
     _WindowState[pid] = state;
   }
 
   let opacity_value = _settings.get_int('window-opacity');
-  set_opacity(window_actor, opacity_value);
+  set_opacity(window_surface, opacity_value, state);
 }
 
 function window_grab_end(meta_display, meta_screen, meta_window, meta_grab_op, gpointer) {
@@ -131,11 +129,11 @@ function window_grab_end(meta_display, meta_screen, meta_window, meta_grab_op, g
     return;
   }
 
-  let window_actor = meta_window.get_compositor_private();
+  let window_surface = get_window_surface(meta_window);
   let pid = meta_window.get_pid();
-
   let state = _WindowState[pid];
-  set_opacity(window_actor, state.original_opacity, function() { delete _WindowState[pid]; }, true);
+
+  set_opacity(window_surface, state.original_opacity, state, function() { delete _WindowState[pid]; }, true);
 }
 
 function enable() {
