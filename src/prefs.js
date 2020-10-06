@@ -8,12 +8,9 @@ const Gettext = imports.gettext.domain('gnome-shell-extensions');
 const _ = Gettext.gettext;
 
 const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const Convenience = Me.imports.convenience;
-
 
 function init() {
-    Convenience.initTranslations();
+    ExtensionUtils.initTranslations();
 }
 
 const TransparentWindowMovingSettings = GObject.registerClass(
@@ -26,7 +23,7 @@ class TransparentWindowMovingSettings extends Gtk.Grid {
         this.column_spacing = 6;
         this.orientation = Gtk.Orientation.VERTICAL;
 
-        this._settings = Convenience.getSettings();
+        this._settings = ExtensionUtils.getSettings();
 
         this.opacity_label = new Gtk.Label({label: _("Opacity (0..255):"), halign: Gtk.Align.START});
         this.opacity_control = new Gtk.SpinButton({

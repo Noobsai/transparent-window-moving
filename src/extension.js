@@ -1,10 +1,8 @@
-const Tweener = imports.ui.tweener;
+const Clutter = imports.gi.Clutter;
 const Meta = imports.gi.Meta;
 const GLib = imports.gi.GLib;
 
 const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const Convenience = Me.imports.convenience;
 
 let _settings = null;
 let _WindowState;
@@ -69,12 +67,12 @@ function set_opacity(window_surface, target_opacity, state, on_complete, check_i
     window_surface.opacity = target_opacity;
     complete_func();
   } else {
-    Tweener.addTween(window_surface, {
-        time: transition_time,
-        transition: 'easeOutQuad',
-        opacity: target_opacity,
-        onComplete: complete_func
-    });   
+    window_surface.ease({
+      duration: transition_time * 1000,
+      mode: Clutter.AnimationMode.EASE_OUT_QUAD, 
+      opacity: target_opacity,
+      onComplete: complete_func
+  });
     if (check_if_completed) {
       // Repair opacity if the Tween was canceled
       // Seems was fixed in 3.36
@@ -137,7 +135,7 @@ function window_grab_end(meta_display, meta_screen, meta_window, meta_grab_op, g
 }
 
 function enable() {
-  _settings = Convenience.getSettings();
+  _settings = ExtensionUtils.getSettings();
   init_grab_operations();
   _WindowState = {};
   _on_window_grab_begin = global.display.connect('grab-op-begin', window_grab_begin);
@@ -157,5 +155,5 @@ function disable() {
 }
 
 function init() {
-  Convenience.initTranslations();
+  ExtensionUtils.initTranslations();
 }
