@@ -1,6 +1,5 @@
 const Clutter = imports.gi.Clutter;
 const Meta = imports.gi.Meta;
-const GLib = imports.gi.GLib;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 
