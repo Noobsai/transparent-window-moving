@@ -83,7 +83,7 @@ function get_window_surface(meta_window) {
   return window_actor;
 }
 
-function window_grab_begin(meta_display, meta_screen, meta_window, meta_grab_op, gpointer) {
+function window_grab_begin(meta_display, meta_window, meta_grab_op, gpointer) {
   if (!meta_window || !is_grab_operation_allowed(meta_grab_op)) {
     return;
   }
@@ -98,7 +98,7 @@ function window_grab_begin(meta_display, meta_screen, meta_window, meta_grab_op,
   set_opacity(window_surface, opacity_value);
 }
 
-function window_grab_end(meta_display, meta_screen, meta_window, meta_grab_op, gpointer) {
+function window_grab_end(meta_display, meta_window, meta_grab_op, gpointer) {
   if (!meta_window || !is_grab_operation_allowed(meta_grab_op)) {
     return;
   }

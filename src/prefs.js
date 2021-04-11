@@ -66,7 +66,5 @@ class TransparentWindowMovingSettings extends Gtk.Grid {
 
 function buildPrefsWidget() {
     let widget = new TransparentWindowMovingSettings();
-    widget.show_all();
-
     return widget;
 }
