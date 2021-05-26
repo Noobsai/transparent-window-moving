@@ -50,7 +50,7 @@ function is_grab_operation_allowed(grab_op) {
 	return _allowed_grab_operations.indexOf(grab_op) > -1;
 }
 
-function set_opacity(window_surface, target_opacity, on_complete) {
+function set_opacity(window_surfaces, target_opacity, on_complete) {
 	let complete_func = function() {
 		if (on_complete) {
 			on_complete();
@@ -59,28 +59,31 @@ function set_opacity(window_surface, target_opacity, on_complete) {
 
 	let transition_time = _settings.get_double('transition-time');
 	if (transition_time < 0.001) {
-		window_surface.opacity = target_opacity;
+		window_surfaces.forEach(surface => {
+			surface.opacity = target_opacity;
+		});
 		complete_func();
 	} else {
-		window_surface.ease({
-			duration: transition_time * 1000,
-			mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-			opacity: target_opacity,
-			onComplete: complete_func
+		window_surfaces.forEach(surface => {
+			surface.ease({
+				duration: transition_time * 1000,
+				mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+				opacity: target_opacity,
+				onComplete: complete_func
+			});
 		});
 	}
 }
 
-function get_window_surface(meta_window) {
+function get_window_surfaces(meta_window) {
 	let window_actor = meta_window.get_compositor_private();
 	let childs = window_actor.get_children();
-	for (let i = 0; i < childs.length; i++) {
-		if (childs[i].constructor.name.indexOf('MetaSurfaceActor') > -1) {
-			return childs[i];
-		}
+	let surfaces = childs.filter(child => child.constructor.name.indexOf('MetaSurfaceActor') > -1);
+	if (surfaces.length > 0) {
+		return surfaces;
 	}
 
-	return window_actor;
+	return [window_actor];
 }
 
 function window_grab_begin(meta_display, meta_window, meta_grab_op, gpointer) {
@@ -88,14 +91,14 @@ function window_grab_begin(meta_display, meta_window, meta_grab_op, gpointer) {
 		return;
 	}
 
-	let window_surface = get_window_surface(meta_window);
+	let window_surfaces = get_window_surfaces(meta_window);
 	let pid = meta_window.get_pid();
 	if (!_window_opacity[pid]) {
-		_window_opacity[pid] = window_surface.opacity;
+		_window_opacity[pid] = window_surfaces[0].opacity;
 	}
 
 	let opacity_value = _settings.get_int('window-opacity');
-	set_opacity(window_surface, opacity_value);
+	set_opacity(window_surfaces, opacity_value);
 }
 
 function window_grab_end(meta_display, meta_window, meta_grab_op, gpointer) {
@@ -103,10 +106,10 @@ function window_grab_end(meta_display, meta_window, meta_grab_op, gpointer) {
 		return;
 	}
 
-	let window_surface = get_window_surface(meta_window);
+	let window_surfaces = get_window_surfaces(meta_window);
 	let pid = meta_window.get_pid();
 
-	set_opacity(window_surface, _window_opacity[pid], function() { delete _window_opacity[pid]; });
+	set_opacity(window_surfaces, _window_opacity[pid], function() { delete _window_opacity[pid]; });
 }
 
 function enable() {
