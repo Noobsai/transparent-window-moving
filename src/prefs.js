@@ -1,4 +1,4 @@
-// -*- mode: js2; indent-tabs-mode: nil; js2-basic-offset: 4 -*-
+'use strict';
 
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;

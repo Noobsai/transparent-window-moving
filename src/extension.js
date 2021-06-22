@@ -1,3 +1,5 @@
+'use strict';
+
 const Clutter = imports.gi.Clutter;
 const Meta = imports.gi.Meta;
 
