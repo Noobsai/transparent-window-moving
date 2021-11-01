@@ -8,14 +8,12 @@ const _ = Gettext.gettext;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 
-let _settings;
-
 function init() {
-	_settings = ExtensionUtils.getSettings();
 	ExtensionUtils.initTranslations();
 }
 
 function buildPrefsWidget() {
+	let settings = ExtensionUtils.getSettings();
 	let box = new Gtk.Box({
 		halign: Gtk.Align.CENTER,
 		orientation: Gtk.Orientation.VERTICAL,
@@ -26,22 +24,22 @@ function buildPrefsWidget() {
 		spacing: 16
 	});
 
-	box.append(buildSpin('window-opacity', [0, 255, 5, 50, 0], _("Opacity (0..255):")));
-	box.append(buildSpin('transition-time', [0, 1, 0.1, 0, 2], _("Animation time:")));
-	box.append(buildSwitcher('transparent-on-moving', _("Transparent on moving:")));
-	box.append(buildSwitcher('transparent-on-resizing', _("Transparent on resizing:")));
+	box.append(buildSpin(settings, 'window-opacity', [0, 255, 5, 50, 0], _("Opacity (0..255):")));
+	box.append(buildSpin(settings, 'transition-time', [0, 1, 0.1, 0, 2], _("Animation time:")));
+	box.append(buildSwitcher(settings, 'transparent-on-moving', _("Transparent on moving:")));
+	box.append(buildSwitcher(settings, 'transparent-on-resizing', _("Transparent on resizing:")));
 
 	return box;
 }
 
-function buildSwitcher(key, labeltext) {
+function buildSwitcher(settings, key, labeltext) {
 	let hbox = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL, spacing: 10 });
 
 	let label = new Gtk.Label({label: labeltext });
 
 	let switcher = new Gtk.Switch();
 
-	_settings.bind(key, switcher, 'active', Gio.SettingsBindFlags.DEFAULT);
+	settings.bind(key, switcher, 'active', Gio.SettingsBindFlags.DEFAULT);
 
 	hbox.append(label);
 	hbox.append(switcher);
@@ -49,7 +47,7 @@ function buildSwitcher(key, labeltext) {
 	return hbox;
 }
 
-function buildSpin(key, values, labeltext) {
+function buildSpin(settings, key, values, labeltext) {
 	let [lower, upper, step, page, digits] = values;
 	let hbox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 10 });
 
@@ -65,7 +63,7 @@ function buildSpin(key, values, labeltext) {
 		})
 	});
 
-	_settings.bind(key, spin, 'value', Gio.SettingsBindFlags.DEFAULT);
+	settings.bind(key, spin, 'value', Gio.SettingsBindFlags.DEFAULT);
 
 	hbox.append(label);
 	hbox.append(spin);
