@@ -5,19 +5,12 @@ const Meta = imports.gi.Meta;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 
-let _settings = null;
-let _window_opacity;
-
-let _on_window_grab_begin, _on_window_grab_end;
-let _on_move_changed, _on_resize_changed;
-
-let _allowed_grab_operations = [];
-let _grab_moving_operations = [
+const _grab_moving_operations = [
 	Meta.GrabOp.MOVING,
 	Meta.GrabOp.KEYBOARD_MOVING
 ];
 
-let _grab_resizing_operations = [
+const _grab_resizing_operations = [
 	Meta.GrabOp.RESIZING_NW,
 	Meta.GrabOp.RESIZING_N,
 	Meta.GrabOp.RESIZING_NE,
@@ -37,103 +30,110 @@ let _grab_resizing_operations = [
 	Meta.GrabOp.KEYBOARD_RESIZING_W
 ];
 
-function init_grab_operations() {
-	_allowed_grab_operations = [];
-	if (_settings.get_boolean('transparent-on-moving')) {
-		_allowed_grab_operations.push(..._grab_moving_operations);
-	}
-
-	if (_settings.get_boolean('transparent-on-resizing')) {
-		_allowed_grab_operations.push(..._grab_resizing_operations);
-	}
-}
-
-function is_grab_operation_allowed(grab_op) {
-	return _allowed_grab_operations.indexOf(grab_op) > -1;
-}
-
-function set_opacity(window_surfaces, target_opacity, on_complete) {
-	let complete_func = function() {
-		if (on_complete) {
-			on_complete();
+class Extension {
+	init_grab_operations() {
+		this._allowed_grab_operations = [];
+		if (this._settings.get_boolean('transparent-on-moving')) {
+			this._allowed_grab_operations.push(..._grab_moving_operations);
 		}
-	};
-
-	let transition_time = _settings.get_double('transition-time');
-	if (transition_time < 0.001) {
-		window_surfaces.forEach(surface => {
-			surface.opacity = target_opacity;
-		});
-		complete_func();
-	} else {
-		window_surfaces.forEach(surface => {
-			surface.ease({
-				duration: transition_time * 1000,
-				mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-				opacity: target_opacity,
-				onComplete: complete_func
+	
+		if (this._settings.get_boolean('transparent-on-resizing')) {
+			this._allowed_grab_operations.push(..._grab_resizing_operations);
+		}
+	}
+	
+	is_grab_operation_allowed(grab_op) {
+		return this._allowed_grab_operations.indexOf(grab_op) > -1;
+	}
+	
+	set_opacity(window_surfaces, target_opacity, on_complete) {
+		const complete_func = function() {
+			if (on_complete) {
+				on_complete();
+			}
+		};
+	
+		const transition_time = this._settings.get_double('transition-time');
+		if (transition_time < 0.001) {
+			window_surfaces.forEach(surface => {
+				surface.opacity = target_opacity;
 			});
-		});
+			complete_func();
+		} else {
+			window_surfaces.forEach(surface => {
+				surface.ease({
+					duration: transition_time * 1000,
+					mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+					opacity: target_opacity,
+					onComplete: complete_func
+				});
+			});
+		}
 	}
-}
+	
+	get_window_surfaces(meta_window) {
+		const window_actor = meta_window.get_compositor_private();
+		const surfaces = window_actor.get_children().filter(child => child.constructor.name.indexOf('MetaSurfaceActor') > -1);
+		if (surfaces.length > 0) {
+			return surfaces;
+		}
+	
+		return [window_actor];
+	}
+	
+	window_grab_begin(meta_display, meta_window, meta_grab_op, gpointer) {
+		if (!meta_window || !this.is_grab_operation_allowed(meta_grab_op)) {
+			return;
+		}
+	
+		const window_surfaces = this.get_window_surfaces(meta_window);
+		const pid = meta_window.get_pid();
+		if (!this._window_opacity[pid]) {
+			this._window_opacity[pid] = window_surfaces[0].opacity;
+		}
+	
+		const opacity_value = this._settings.get_int('window-opacity');
+		this.set_opacity(window_surfaces, opacity_value);
+	}
+	
+	window_grab_end(meta_display, meta_window, meta_grab_op, gpointer) {
+		if (!meta_window || !this.is_grab_operation_allowed(meta_grab_op)) {
+			return;
+		}
+	
+		const window_surfaces = this.get_window_surfaces(meta_window);
+		const pid = meta_window.get_pid();
 
-function get_window_surfaces(meta_window) {
-	let window_actor = meta_window.get_compositor_private();
-	let childs = window_actor.get_children();
-	let surfaces = childs.filter(child => child.constructor.name.indexOf('MetaSurfaceActor') > -1);
-	if (surfaces.length > 0) {
-		return surfaces;
+		const complete_func = function() {
+			delete this._window_opacity[pid];
+		};
+	
+		this.set_opacity(window_surfaces, this._window_opacity[pid], complete_func.bind(this));
 	}
 
-	return [window_actor];
-}
-
-function window_grab_begin(meta_display, meta_window, meta_grab_op, gpointer) {
-	if (!meta_window || !is_grab_operation_allowed(meta_grab_op)) {
-		return;
+	enable() {
+		this._settings = ExtensionUtils.getSettings();
+		this.init_grab_operations();
+		this._window_opacity = {};
+		this._on_window_grab_begin = global.display.connect('grab-op-begin', this.window_grab_begin.bind(this));
+		this._on_window_grab_end = global.display.connect('grab-op-end', this.window_grab_end.bind(this));
+		this._on_move_changed = this._settings.connect('changed::transparent-on-moving', this.init_grab_operations.bind(this));
+		this._on_resize_changed = this._settings.connect('changed::transparent-on-resizing', this.init_grab_operations.bind(this));
 	}
 
-	let window_surfaces = get_window_surfaces(meta_window);
-	let pid = meta_window.get_pid();
-	if (!_window_opacity[pid]) {
-		_window_opacity[pid] = window_surfaces[0].opacity;
+	disable() {
+		global.display.disconnect(this._on_window_grab_begin);
+		global.display.disconnect(this._on_window_grab_end);
+		this._settings.disconnect(this._on_move_changed);
+		this._settings.disconnect(this._on_resize_changed);
+	
+		delete this._window_opacity;
+		delete this._allowed_grab_operations;
+		this._settings.run_dispose();
+		delete this._settings;
 	}
-
-	let opacity_value = _settings.get_int('window-opacity');
-	set_opacity(window_surfaces, opacity_value);
-}
-
-function window_grab_end(meta_display, meta_window, meta_grab_op, gpointer) {
-	if (!meta_window || !is_grab_operation_allowed(meta_grab_op)) {
-		return;
-	}
-
-	let window_surfaces = get_window_surfaces(meta_window);
-	let pid = meta_window.get_pid();
-
-	set_opacity(window_surfaces, _window_opacity[pid], function() { delete _window_opacity[pid]; });
-}
-
-function enable() {
-	_settings = ExtensionUtils.getSettings();
-	init_grab_operations();
-	_window_opacity = {};
-	_on_window_grab_begin = global.display.connect('grab-op-begin', window_grab_begin);
-	_on_window_grab_end = global.display.connect('grab-op-end', window_grab_end);
-	_on_move_changed = _settings.connect('changed::transparent-on-moving', init_grab_operations);
-	_on_resize_changed = _settings.connect('changed::transparent-on-resizing', init_grab_operations);
-}
-
-function disable() {
-	global.display.disconnect(_on_window_grab_begin);
-	global.display.disconnect(_on_window_grab_end);
-	_settings.disconnect(_on_move_changed);
-	_settings.disconnect(_on_resize_changed);
-
-	_window_opacity = {};
-	_settings.run_dispose();
 }
 
 function init() {
-	ExtensionUtils.initTranslations();
+	return new Extension();
 }
