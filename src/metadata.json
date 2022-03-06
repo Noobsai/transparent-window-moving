@@ -6,6 +6,6 @@
 	"settings-schema": "org.gnome.shell.extensions.transparent-window-moving",
 	"description": "Makes the window semi-transparent when moving or resizing", 
 	"url": "https://github.com/Noobsai/transparent-window-moving", 
-	"version": 9,
-	"shell-version": ["40", "41"]
+	"version": 10,
+	"shell-version": ["40", "41", "42"]
 }
