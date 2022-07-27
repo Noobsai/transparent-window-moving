@@ -83,6 +83,7 @@ class Extension {
 	
 	window_grab_begin(meta_display, meta_window, meta_grab_op, gpointer) {
 		if (!meta_window || !this.is_grab_operation_allowed(meta_grab_op)) {
+			log(`[TWM] ${Date.now()} ${Date.now()} window_grab_begin returned`);
 			return;
 		}
 	
@@ -91,13 +92,19 @@ class Extension {
 		if (!this._window_opacity[pid]) {
 			this._window_opacity[pid] = window_surfaces[0].opacity;
 		}
-	
+
+		const complete_func = function() {
+			log(`[TWM] ${Date.now()} window_grab_begin completed pid=${pid} op=${this._window_opacity[pid]}`);
+		};
+		
+		log(`[TWM] ${Date.now()} window_grab_begin started pid=${pid} op=${this._window_opacity[pid]}`);
 		const opacity_value = this._settings.get_int('window-opacity');
-		this.set_opacity(window_surfaces, opacity_value);
+		this.set_opacity(window_surfaces, opacity_value, complete_func.bind(this));
 	}
 	
 	window_grab_end(meta_display, meta_window, meta_grab_op, gpointer) {
 		if (!meta_window || !this.is_grab_operation_allowed(meta_grab_op)) {
+			log(`[TWM] ${Date.now()} window_grab_end returned`);
 			return;
 		}
 	
@@ -105,9 +112,11 @@ class Extension {
 		const pid = meta_window.get_pid();
 
 		const complete_func = function() {
+			log(`[TWM] ${Date.now()} window_grab_end completed pid=${pid} op=${this._window_opacity[pid]}`);
 			delete this._window_opacity[pid];
 		};
 	
+		log(`[TWM] ${Date.now()} window_grab_end started pid=${pid} op=${this._window_opacity[pid]}`);
 		this.set_opacity(window_surfaces, this._window_opacity[pid], complete_func.bind(this));
 	}
 
