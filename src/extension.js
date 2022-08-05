@@ -83,7 +83,7 @@ class Extension {
 	
 	window_grab_begin(meta_display, meta_window, meta_grab_op, gpointer) {
 		if (!meta_window || !this.is_grab_operation_allowed(meta_grab_op)) {
-			log(`[TWM] ${Date.now()} ${Date.now()} window_grab_begin returned`);
+			log(`[TWM] ${Date.now()} window_grab_begin returned`);
 			return;
 		}
 	
