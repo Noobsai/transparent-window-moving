@@ -46,26 +46,18 @@ class Extension {
 		return this._allowed_grab_operations.indexOf(grab_op) > -1;
 	}
 	
-	set_opacity(window_surfaces, target_opacity, on_complete) {
-		const complete_func = function() {
-			if (on_complete) {
-				on_complete();
-			}
-		};
-	
+	set_opacity(window_surfaces, target_opacity) {
 		const transition_time = this._settings.get_double('transition-time');
 		if (transition_time < 0.001) {
 			window_surfaces.forEach(surface => {
 				surface.opacity = target_opacity;
 			});
-			complete_func();
 		} else {
 			window_surfaces.forEach(surface => {
 				surface.ease({
 					duration: transition_time * 1000,
 					mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-					opacity: target_opacity,
-					onComplete: complete_func
+					opacity: target_opacity
 				});
 			});
 		}
