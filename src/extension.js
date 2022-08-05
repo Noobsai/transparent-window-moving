@@ -87,11 +87,6 @@ class Extension {
 		}
 	
 		const window_surfaces = this.get_window_surfaces(meta_window);
-		const pid = meta_window.get_pid();
-		if (!this._window_opacity[pid]) {
-			this._window_opacity[pid] = window_surfaces[0].opacity;
-		}
-	
 		const opacity_value = this._settings.get_int('window-opacity');
 		this.set_opacity(window_surfaces, opacity_value);
 	}
@@ -102,19 +97,13 @@ class Extension {
 		}
 	
 		const window_surfaces = this.get_window_surfaces(meta_window);
-		const pid = meta_window.get_pid();
-
-		const complete_func = function() {
-			delete this._window_opacity[pid];
-		};
-	
-		this.set_opacity(window_surfaces, this._window_opacity[pid], complete_func.bind(this));
+		const opacity_value = 255;
+		this.set_opacity(window_surfaces, opacity_value);
 	}
 
 	enable() {
 		this._settings = ExtensionUtils.getSettings();
 		this.init_grab_operations();
-		this._window_opacity = {};
 		this._on_window_grab_begin = global.display.connect('grab-op-begin', this.window_grab_begin.bind(this));
 		this._on_window_grab_end = global.display.connect('grab-op-end', this.window_grab_end.bind(this));
 		this._on_move_changed = this._settings.connect('changed::transparent-on-moving', this.init_grab_operations.bind(this));
@@ -127,7 +116,6 @@ class Extension {
 		this._settings.disconnect(this._on_move_changed);
 		this._settings.disconnect(this._on_resize_changed);
 	
-		delete this._window_opacity;
 		delete this._allowed_grab_operations;
 		this._settings.run_dispose();
 		delete this._settings;
