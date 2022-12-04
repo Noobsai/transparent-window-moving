@@ -73,12 +73,28 @@ class Extension {
 	
 	get_window_surfaces(meta_window) {
 		const window_actor = meta_window.get_compositor_private();
-		const surfaces = window_actor.get_children().filter(child => child.constructor.name.indexOf('MetaSurfaceActor') > -1);
+		const surfaces = this.find_meta_surface_actors(window_actor);
 		if (surfaces.length > 0) {
 			return surfaces;
 		}
 	
 		return [window_actor];
+	}
+
+	find_meta_surface_actors(meta_actor) {
+		if (meta_actor.constructor.name.indexOf('MetaSurfaceActor') > -1) {
+			return [meta_actor];
+		}
+		
+		const surfaces = [];
+		for (const child of meta_actor.get_children()) {
+			const result = this.find_meta_surface_actors(child);
+			if (result.length > 0) {
+				surfaces.push(...result);
+			}
+		}
+
+		return surfaces;
 	}
 	
 	window_grab_begin(meta_display, meta_window, meta_grab_op, gpointer) {
