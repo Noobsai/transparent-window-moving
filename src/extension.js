@@ -6,7 +6,8 @@ import { Extension, gettext as _ }
 
 const _grab_moving_operations = [
 	Meta.GrabOp.MOVING,
-	Meta.GrabOp.KEYBOARD_MOVING
+	Meta.GrabOp.KEYBOARD_MOVING,
+	Meta.GrabOp.MOVING_UNCONSTRAINED
 ];
 
 const _grab_resizing_operations = [
