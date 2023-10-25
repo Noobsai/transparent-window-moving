@@ -1,9 +1,8 @@
-'use strict';
+import Clutter from 'gi://Clutter';
+import Meta from 'gi://Meta';
 
-const Clutter = imports.gi.Clutter;
-const Meta = imports.gi.Meta;
-
-const ExtensionUtils = imports.misc.extensionUtils;
+import { Extension, gettext as _ }
+	from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const _grab_moving_operations = [
 	Meta.GrabOp.MOVING,
@@ -30,7 +29,7 @@ const _grab_resizing_operations = [
 	Meta.GrabOp.KEYBOARD_RESIZING_W
 ];
 
-class Extension {
+export default class TransparentWindowMoving extends Extension {
 	init_grab_operations() {
 		this._allowed_grab_operations = [];
 		if (this._settings.get_boolean('transparent-on-moving')) {
@@ -128,7 +127,7 @@ class Extension {
 	}
 
 	enable() {
-		this._settings = ExtensionUtils.getSettings();
+		this._settings = this.getSettings();
 		this.init_grab_operations();
 		this._window_opacity = {};
 		this._on_window_grab_begin = global.display.connect('grab-op-begin', this.window_grab_begin.bind(this));
@@ -148,8 +147,4 @@ class Extension {
 		this._settings.run_dispose();
 		delete this._settings;
 	}
-}
-
-function init() {
-	return new Extension();
 }
