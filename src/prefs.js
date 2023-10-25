@@ -1,7 +1,8 @@
-import Gtk from 'gi://Gtk';
 import Adw from 'gi://Adw';
+import Gio from 'gi://Gio';
+import Gtk from 'gi://Gtk';
 
-import {ExtensionPreferences, gettext as _}
+import { ExtensionPreferences, gettext as _ }
     from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 
@@ -30,18 +31,18 @@ export default class TransparentWindowMovingPreferences
             spacing: 16
         });
 
-        box.append(this.buildSpin(settings, 'window-opacity', [0, 255, 5, 50, 0], _("Opacity (0..255):")));
-        box.append(this.buildSpin(settings, 'transition-time', [0, 1, 0.1, 0, 2], _("Animation time:")));
-        box.append(this.buildSwitcher(settings, 'transparent-on-moving', _("Transparent on moving:")));
-        box.append(this.buildSwitcher(settings, 'transparent-on-resizing', _("Transparent on resizing:")));
+        box.append(this.buildSpin(settings, 'window-opacity', [0, 255, 5, 50, 0], _('Opacity (0..255):')));
+        box.append(this.buildSpin(settings, 'transition-time', [0, 1, 0.1, 0, 2], _('Animation time:')));
+        box.append(this.buildSwitcher(settings, 'transparent-on-moving', _('Transparent on moving:')));
+        box.append(this.buildSwitcher(settings, 'transparent-on-resizing', _('Transparent on resizing:')));
 
         return box;
     }
 
     buildSwitcher(settings, key, labeltext) {
-        let hbox = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL, spacing: 10});
+        let hbox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 10 });
 
-        let label = new Gtk.Label({label: labeltext});
+        let label = new Gtk.Label({ label: labeltext });
 
         let switcher = new Gtk.Switch();
 
@@ -55,9 +56,9 @@ export default class TransparentWindowMovingPreferences
 
     buildSpin(settings, key, values, labeltext) {
         let [lower, upper, step, page, digits] = values;
-        let hbox = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL, spacing: 10});
+        let hbox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 10 });
 
-        let label = new Gtk.Label({label: labeltext});
+        let label = new Gtk.Label({ label: labeltext });
 
         let spin = new Gtk.SpinButton({
             digits: digits,
@@ -77,5 +78,3 @@ export default class TransparentWindowMovingPreferences
         return hbox;
     };
 }
-
-

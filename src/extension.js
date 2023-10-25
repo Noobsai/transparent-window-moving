@@ -1,7 +1,7 @@
 import Clutter from 'gi://Clutter';
 import Meta from 'gi://Meta';
 
-import {Extension, gettext as _}
+import { Extension, gettext as _ }
 	from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const _grab_moving_operations = [
@@ -147,8 +147,4 @@ export default class TransparentWindowMoving extends Extension {
 		this._settings.run_dispose();
 		delete this._settings;
 	}
-}
-
-function init() {
-	return new Extension();
 }
