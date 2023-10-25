@@ -144,7 +144,10 @@ export default class TransparentWindowMoving extends Extension {
 	
 		delete this._window_opacity;
 		delete this._allowed_grab_operations;
-		this._settings.run_dispose();
 		delete this._settings;
+		delete this._on_window_grab_begin;
+		delete this._on_window_grab_end;
+		delete this._on_move_changed;
+		delete this._on_resize_changed;
 	}
 }
