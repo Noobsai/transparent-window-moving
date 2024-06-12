@@ -17,14 +17,8 @@ export default class TransparentWindowMovingPreferences extends ExtensionPrefere
 
     buildPrefsWidget() {
         let settings = this.getSettings();
-        let box = new Gtk.Box({
-            halign: Gtk.Align.CENTER,
-            orientation: Gtk.Orientation.VERTICAL,
-            "margin-top": 20,
-            "margin-bottom": 20,
-            "margin-start": 20,
-            "margin-end": 20,
-            spacing: 16,
+        let box = new Gtk.ListBox({
+            cssClasses: ["boxed-list"],
         });
 
         box.append(this.buildSpin(settings, "window-opacity", [0, 255, 5, 50, 0], _("Opacity (0..255):")));
