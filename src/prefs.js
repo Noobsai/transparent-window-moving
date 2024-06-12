@@ -21,10 +21,10 @@ export default class TransparentWindowMovingPreferences extends ExtensionPrefere
             cssClasses: ["boxed-list"],
         });
 
-        box.append(this.buildSpin(settings, "window-opacity", [0, 255, 5, 50, 0], _("Opacity (0..255):")));
-        box.append(this.buildSpin(settings, "transition-time", [0, 1, 0.1, 0, 2], _("Animation time:")));
-        box.append(this.buildSwitcher(settings, "transparent-on-moving", _("Transparent on moving:")));
-        box.append(this.buildSwitcher(settings, "transparent-on-resizing", _("Transparent on resizing:")));
+        box.append(this.buildSpin(settings, "window-opacity", [0, 255, 5, 50, 0], _("Opacity (0..255)")));
+        box.append(this.buildSpin(settings, "transition-time", [0, 1, 0.1, 0, 2], _("Animation time")));
+        box.append(this.buildSwitcher(settings, "transparent-on-moving", _("Transparent on moving")));
+        box.append(this.buildSwitcher(settings, "transparent-on-resizing", _("Transparent on resizing")));
 
         return box;
     }
