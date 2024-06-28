@@ -1,6 +1,7 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2024-06-12 20:24+0300\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-06-28 22:54+0300\n"
 "Last-Translator: Petrov Anton <petrovanton247@gmail.com>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
@@ -8,8 +9,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: src/prefs.js:11
-msgid "Transparent Window Moving"
-msgstr "Прозрачное перемещение окна"
+msgid "Settings"
+msgstr "Настройки"
 
 #: src/prefs.js:24
 msgid "Opacity (0..255)"

@@ -8,7 +8,7 @@ export default class TransparentWindowMovingPreferences extends ExtensionPrefere
     fillPreferencesWindow(window) {
         const page = new Adw.PreferencesPage();
         const group = new Adw.PreferencesGroup({
-            title: _("Transparent Window Moving"),
+            title: _("Settings"),
         });
         group.add(this.buildPrefsWidget());
         page.add(group);
