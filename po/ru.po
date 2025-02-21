@@ -1,0 +1,29 @@
+msgid ""
+msgstr ""
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-06-28 22:54+0300\n"
+"Last-Translator: Petrov Anton <petrovanton247@gmail.com>\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/prefs.js:11
+msgid "Settings"
+msgstr "Настройки"
+
+#: src/prefs.js:24
+msgid "Opacity (0..255)"
+msgstr "Прозрачность (0-255)"
+
+#: src/prefs.js:25
+msgid "Animation time"
+msgstr "Продолжительность анимации"
+
+#: src/prefs.js:26
+msgid "Transparent on moving"
+msgstr "Прозрачность при перемещении"
+
+#: src/prefs.js:27
+msgid "Transparent on resizing"
+msgstr "Прозрачность при изменении размера"
