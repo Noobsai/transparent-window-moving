@@ -4,11 +4,8 @@
 	"name": "Transparent Window Moving",
 	"gettext-domain": "transparent-window-moving@noobsai.github.com",
 	"settings-schema": "org.gnome.shell.extensions.transparent-window-moving",
-	"description": "Makes the window semi-transparent when moving or resizing",
-	"url": "https://github.com/Noobsai/transparent-window-moving",
-	"version": 17,
-	"shell-version": [
-		"45",
-		"46"
-	]
+	"description": "Makes the window semi-transparent when moving or resizing", 
+	"url": "https://github.com/Noobsai/transparent-window-moving", 
+	"version": 18,
+	"shell-version": ["45", "46", "47"]
 }
