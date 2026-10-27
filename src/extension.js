@@ -103,34 +103,38 @@ export default class TransparentWindowMoving extends Extension {
 		}
 	
 		const window_surfaces = this.get_window_surfaces(meta_window);
-		const pid = meta_window.get_pid();
-		if (!this._window_opacity[pid]) {
-			this._window_opacity[pid] = window_surfaces[0].opacity;
+		const opacity_value = this._settings.get_int('window-opacity');
+		// Track per window, not per PID: apps like Firefox share one PID across windows.
+		if (!this._window_opacity.has(meta_window)) {
+			let original = window_surfaces[0].opacity;
+			// A window already left at our transparency value was stuck by an earlier bug; heal it.
+			if (original === opacity_value) {
+				original = 255;
+			}
+			this._window_opacity.set(meta_window, original);
 		}
 	
-		const opacity_value = this._settings.get_int('window-opacity');
 		this.set_opacity(window_surfaces, opacity_value);
 	}
 	
 	window_grab_end(meta_display, meta_window, meta_grab_op, gpointer) {
-		if (!meta_window || !this.is_grab_operation_allowed(meta_grab_op)) {
+		// Restore any window we made transparent, even if the end op differs from the begin op
+		// (tiling extensions can change it mid-grab).
+		if (!meta_window || !this._window_opacity.has(meta_window)) {
 			return;
 		}
 	
-		const window_surfaces = this.get_window_surfaces(meta_window);
-		const pid = meta_window.get_pid();
-
-		const complete_func = function() {
-			delete this._window_opacity[pid];
-		};
-	
-		this.set_opacity(window_surfaces, this._window_opacity[pid], complete_func.bind(this));
+		const original = this._window_opacity.get(meta_window);
+		// Forget it now rather than on animation completion, so a new grab starting
+		// during the fade-in can't lose the stored value.
+		this._window_opacity.delete(meta_window);
+		this.set_opacity(this.get_window_surfaces(meta_window), original);
 	}
 
 	enable() {
 		this._settings = this.getSettings();
 		this.init_grab_operations();
-		this._window_opacity = {};
+		this._window_opacity = new Map();
 		this._on_window_grab_begin = global.display.connect('grab-op-begin', this.window_grab_begin.bind(this));
 		this._on_window_grab_end = global.display.connect('grab-op-end', this.window_grab_end.bind(this));
 		this._on_move_changed = this._settings.connect('changed::transparent-on-moving', this.init_grab_operations.bind(this));
@@ -143,6 +147,14 @@ export default class TransparentWindowMoving extends Extension {
 		this._settings.disconnect(this._on_move_changed);
 		this._settings.disconnect(this._on_resize_changed);
 	
+		for (const [meta_window, original] of this._window_opacity) {
+			if (meta_window.get_compositor_private()) {
+				this.get_window_surfaces(meta_window).forEach(surface => {
+					surface.remove_all_transitions();
+					surface.opacity = original;
+				});
+			}
+		}
 		delete this._window_opacity;
 		delete this._allowed_grab_operations;
 		delete this._settings;
